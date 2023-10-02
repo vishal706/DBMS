@@ -3,6 +3,11 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # For clang-tidy.
 set(BUILD_SHARED_LIBS OFF) # We expect external libraries to be linked statically.
 set(CMAKE_CXX_STANDARD 17) # Compile as C++17.
 set(CMAKE_CXX_STANDARD_REQUIRED ON) # Require C++17 support.
+# Set the CXX compiler to Clang (replace with the path to your Clang executable if needed)
+set(CMAKE_CXX_COMPILER "/usr/bin/clang++")
+
+# Set the CXX compiler ID to "Clang"
+set(CMAKE_CXX_COMPILER_ID "Clang")
 
 project(BusTub
         VERSION 2023.1
