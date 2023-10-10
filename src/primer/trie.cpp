@@ -3,15 +3,27 @@
 #include "common/exception.h"
 
 namespace bustub {
-
+typedef unsigned long ul;
 template <class T>
 auto Trie::Get(std::string_view key) const -> const T * {
-  throw NotImplementedException("Trie::Get is not implemented.");
+  // throw NotImplementedException("Trie::Get is not implemented.");
 
   // You should walk through the trie to find the node corresponding to the key. If the node doesn't exist, return
   // nullptr. After you find the node, you should use `dynamic_cast` to cast it to `const TrieNodeWithValue<T> *`. If
   // dynamic_cast returns `nullptr`, it means the type of the value is mismatched, and you should return nullptr.
   // Otherwise, return the value.
+
+  std::shared_ptr<const TrieNode> currNode = root_;
+  char c;
+  for(ul i=0; i<key.size();  i++){
+      c = key[i];
+      currNode = currNode->children_.at(c);
+  }
+  std::shared_ptr<T> ret_value;
+  if(currNode->is_value_node_){
+    return ret_value.get();
+  }
+  return nullptr;
 }
 
 template <class T>
@@ -21,21 +33,39 @@ auto Trie::Put(std::string_view key, T value) const -> Trie {
 
   // You should walk through the trie and create new nodes if necessary. If the node corresponding to the key already
   // exists, you should create a new `TrieNodeWithValue`.
-
+  ul i = 0;
+  auto trie_ = new Trie();
   if(!root_){
-    root_ = std::move(new TrieNode());
-    std::shared_ptr<TrieNode> currNode = root_;
-    char &c;
-    for(int i=0; i<strlen(key)-1; i++){
+    trie_->root_ = std::make_shared<TrieNode>();
+    std::shared_ptr<TrieNode> currNode = std::const_pointer_cast<TrieNode>(trie_->root_);
+    char c;
+    for(i=0; i<key.size()-1;  i++){
         c = key[i];
-        currNode->children_[c] = std::move(new TrieNode());
-        currNode = std::move(currNode->children_[c]);
+        currNode->children_[c] = std::make_shared<TrieNode>();
+        currNode = std::const_pointer_cast<TrieNode>(currNode->children_[c]);
     }
     c=key[i];
-    currNode->children_[c] = std::move(new TrieNodeWithValue(std::move(T)));
+    currNode->children_[c] = std::make_shared<TrieNodeWithValue<T>>(std::make_shared<T>(std::move(value)));
+    // Is this the right way ?
+    // currNode->children_[c] = std::static_pointer_cast<TrieNode>(std::make_shared<TrieNodeWithValue<T>>(std::make_shared<T>(std::move(value))));
+    return *trie_;
+    } 
+  else {
+    trie_->root_ = root_->Clone();
+    std::shared_ptr<TrieNode> currNode = std::const_pointer_cast<TrieNode>(trie_->root_);
+    char c;
+    for(i=0; i<key.size()-1; i++){
+        c = key[i];
+        currNode->children_[c] = currNode->children_[c]->Clone();
+        currNode = std::const_pointer_cast<TrieNode>(currNode->children_[c]);
+    }
+    c=key[i];
+    std::shared_ptr<TrieNode> childNode = currNode->children_[c]->Clone();
+    currNode->children_[c] = std::make_shared<TrieNodeWithValue<T>>(childNode->children_, std::make_shared<T>(std::move(value)));
+    // Is this the right way ?
+    // currNode->children_[c] = std::static_pointer_cast<TrieNode>(std::make_shared<TrieNodeWithValue<T>>(std::make_shared<T>(std::move(value))));
+    return *trie_;
   }
-
-  return this;
 }
 
 auto Trie::Remove(std::string_view key) const -> Trie {
